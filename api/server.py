@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='static')
 
-# Configure CORS
-CORS(app, origins=[Config.FRONTEND_URL])
+# Configure CORS - allow all origins if FRONTEND_URL not set
+cors_origins = Config.FRONTEND_URL if Config.FRONTEND_URL else '*'
+CORS(app, origins=cors_origins)
 
 
 # Review UI

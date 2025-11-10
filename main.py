@@ -76,18 +76,24 @@ def main():
     logger.info("=" * 50)
 
     # Auto-initialize database on first run
-    logger.info("Checking database...")
-    from auto_init_db import check_and_init_db
-    if not check_and_init_db():
-        logger.error("Database initialization failed. Exiting.")
-        sys.exit(1)
+    # If database initialization fails, we'll still start the API server
+    # but bot features will be unavailable
+    db_ready = False
+    if Config.DATABASE_URL:
+        logger.info("Checking database...")
+        from auto_init_db import check_and_init_db
+        db_ready = check_and_init_db()
+        if not db_ready:
+            logger.warning("Database initialization failed. API server will start but bot features will be unavailable.")
+    else:
+        logger.warning("DATABASE_URL not set. API server will start but bot features will be unavailable.")
 
     # Register signal handlers
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # Start bot in separate thread
-    if Config.BOT_ENABLED:
+    # Start bot in separate thread only if database is ready
+    if Config.BOT_ENABLED and db_ready:
         bot_thread = threading.Thread(target=start_bot, daemon=True)
         bot_thread.start()
         logger.info("Bot scheduler thread started")
