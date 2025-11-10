@@ -34,6 +34,34 @@ def health_check():
     })
 
 
+# Debug endpoint to test database connectivity
+@app.route('/api/debug', methods=['GET'])
+def debug_endpoint():
+    """Debug endpoint to test various components"""
+    results = {
+        'database_url_set': bool(Config.DATABASE_URL),
+        'claude_api_key_set': bool(Config.CLAUDE_API_KEY),
+        'reddit_client_id_set': bool(Config.REDDIT_CLIENT_ID),
+    }
+
+    # Test database connection
+    try:
+        session = get_session()
+        session.close()
+        results['database_connection'] = 'success'
+    except Exception as e:
+        results['database_connection'] = f'failed: {str(e)}'
+
+    # Test ContentQueue import
+    try:
+        from database.models import ContentQueue
+        results['content_queue_import'] = 'success'
+    except Exception as e:
+        results['content_queue_import'] = f'failed: {str(e)}'
+
+    return jsonify(results)
+
+
 # Tweet endpoints
 @app.route('/api/tweets', methods=['GET'])
 def get_tweets():
