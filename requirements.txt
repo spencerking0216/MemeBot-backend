@@ -1,0 +1,43 @@
+# Twitter API
+tweepy==4.14.0
+
+# Web Framework
+flask==3.0.0
+flask-cors==4.0.0
+
+# Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.23
+
+# LLM Integration
+anthropic==0.25.1
+openai==1.12.0
+
+# Scheduling
+schedule==1.2.0
+apscheduler==3.10.4
+
+# Web Scraping
+beautifulsoup4==4.12.3
+requests==2.31.0
+praw==7.7.1
+
+# Image Processing
+Pillow==10.2.0
+
+# Video Processing
+opencv-python==4.9.0.80
+moviepy==1.0.3
+
+# Audio Processing (for Whisper transcription if using OpenAI)
+# Note: ffmpeg also needs to be installed on system for video/audio processing
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2024.1
+
+# Development
+pytest==8.0.0
