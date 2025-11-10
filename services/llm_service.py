@@ -27,7 +27,7 @@ class LLMService:
             if not Config.CLAUDE_API_KEY:
                 raise ValueError("CLAUDE_API_KEY not set")
             self.client = Anthropic(api_key=Config.CLAUDE_API_KEY)
-            self.model = "claude-3-5-sonnet-20241022"
+            self.model = "claude-3-5-sonnet-20240620"
         elif provider == 'openai':
             if not Config.OPENAI_API_KEY:
                 raise ValueError("OPENAI_API_KEY not set")
