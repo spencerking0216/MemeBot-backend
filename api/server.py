@@ -608,23 +608,51 @@ def generate_test_content():
 
         # Import content generator
         from bot.content_generator import ContentGenerator
+        from database.models import ContentQueue
 
         generator = ContentGenerator()
         results = []
 
         for i in range(count):
             logger.info(f"Generating content {i+1}/{count}...")
-            content = generator.generate_content()
-            if content:
+
+            # Use the correct method name
+            meme = generator.generate_meme_tweet(use_trend=True, irony_level='post-ironic')
+
+            if meme:
+                # Save to queue
+                session = get_session()
+                content_item = ContentQueue(
+                    content=meme['text'],
+                    meme_format=meme.get('meme_format'),
+                    irony_level=meme.get('irony_level'),
+                    topics=meme.get('topics', []),
+                    trend_context=meme.get('trend_context'),
+                    quality_score=meme.get('quality_score', 5.0),
+                    humor_score=meme.get('evaluation', {}).get('humor_score', 5.0),
+                    authenticity_score=meme.get('evaluation', {}).get('authenticity_score', 5.0),
+                    engagement_score=meme.get('evaluation', {}).get('engagement_score', 5.0),
+                    evaluation_data=meme.get('evaluation', {}),
+                    generation_prompt=meme.get('trend_context'),
+                    status='pending'
+                )
+                session.add(content_item)
+                session.commit()
+
                 results.append({
-                    'content': content.get('content'),
-                    'meme_format': content.get('meme_format'),
-                    'irony_level': content.get('irony_level')
+                    'id': content_item.id,
+                    'content': meme['text'],
+                    'meme_format': meme.get('meme_format'),
+                    'irony_level': meme.get('irony_level'),
+                    'quality_score': meme.get('quality_score')
                 })
+
+                session.close()
+                logger.info(f"Content saved to queue (ID: {content_item.id})")
 
         return jsonify({
             'success': True,
-            'message': f'Generated {len(results)} items',
+            'message': f'Generated and queued {len(results)} items',
             'generated': len(results),
             'results': results
         })
