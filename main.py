@@ -67,41 +67,52 @@ def signal_handler(sig, frame):
 
 def main():
     """Main entry point"""
-    logger.info("=" * 50)
-    logger.info("Starting Meme Bot Backend")
-    logger.info("=" * 50)
-    logger.info(f"Environment: {Config.ENVIRONMENT}")
-    logger.info(f"Port: {Config.PORT}")
-    logger.info(f"Bot Enabled: {Config.BOT_ENABLED}")
-    logger.info("=" * 50)
+    try:
+        logger.info("=" * 50)
+        logger.info("Starting Meme Bot Backend")
+        logger.info("=" * 50)
+        logger.info(f"Environment: {Config.ENVIRONMENT}")
+        logger.info(f"Port: {Config.PORT}")
+        logger.info(f"Bot Enabled: {Config.BOT_ENABLED}")
+        logger.info(f"DATABASE_URL set: {bool(Config.DATABASE_URL)}")
+        logger.info("=" * 50)
 
-    # Auto-initialize database on first run
-    # If database initialization fails, we'll still start the API server
-    # but bot features will be unavailable
-    db_ready = False
-    if Config.DATABASE_URL:
-        logger.info("Checking database...")
-        from auto_init_db import check_and_init_db
-        db_ready = check_and_init_db()
-        if not db_ready:
-            logger.warning("Database initialization failed. API server will start but bot features will be unavailable.")
-    else:
-        logger.warning("DATABASE_URL not set. API server will start but bot features will be unavailable.")
+        # Auto-initialize database on first run
+        # If database initialization fails, we'll still start the API server
+        # but bot features will be unavailable
+        db_ready = False
+        if Config.DATABASE_URL:
+            logger.info("Checking database...")
+            try:
+                from auto_init_db import check_and_init_db
+                db_ready = check_and_init_db()
+                if not db_ready:
+                    logger.warning("Database initialization failed. API server will start but bot features will be unavailable.")
+            except Exception as e:
+                logger.error(f"Database check failed: {e}", exc_info=True)
+                logger.warning("Continuing without database...")
+        else:
+            logger.warning("DATABASE_URL not set. API server will start but bot features will be unavailable.")
 
-    # Register signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+        # Register signal handlers
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
 
-    # Start bot in separate thread only if database is ready
-    if Config.BOT_ENABLED and db_ready:
-        bot_thread = threading.Thread(target=start_bot, daemon=True)
-        bot_thread.start()
-        logger.info("Bot scheduler thread started")
-    else:
-        logger.warning("Bot is disabled. Only API server will run.")
+        # Start bot in separate thread only if database is ready
+        if Config.BOT_ENABLED and db_ready:
+            bot_thread = threading.Thread(target=start_bot, daemon=True)
+            bot_thread.start()
+            logger.info("Bot scheduler thread started")
+        else:
+            logger.warning("Bot is disabled. Only API server will run.")
 
-    # Start API server in main thread
-    start_api()
+        # Start API server in main thread
+        logger.info("Starting API server...")
+        start_api()
+
+    except Exception as e:
+        logger.error(f"Fatal error in main: {e}", exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
