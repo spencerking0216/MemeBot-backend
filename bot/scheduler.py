@@ -29,7 +29,15 @@ class MemeBot:
         init_db()
 
         # Initialize components
-        self.twitter = TwitterClient()
+        # Only initialize Twitter client if we're going to post (not in content generator mode)
+        self.twitter = None
+        if not Config.CONTENT_GENERATOR_MODE:
+            try:
+                self.twitter = TwitterClient()
+                logger.info("Twitter client initialized")
+            except Exception as e:
+                logger.warning(f"Twitter client initialization failed: {e}. Bot will run in content-only mode.")
+
         self.content_gen = ContentGenerator(llm_provider='claude')
         self.scraper = MemeScraper()
 
@@ -225,6 +233,10 @@ class MemeBot:
     def post_meme(self):
         """Generate and post a meme tweet (AUTO-POST MODE ONLY)"""
         try:
+            if not self.twitter:
+                logger.warning("Twitter client not initialized. Cannot post meme.")
+                return
+
             logger.info("Generating meme content...")
 
             # Generate meme tweet
@@ -286,6 +298,10 @@ class MemeBot:
     def update_tweet_metrics(self):
         """Update engagement metrics for recent tweets"""
         try:
+            if not self.twitter:
+                logger.warning("Twitter client not initialized. Skipping metrics update.")
+                return
+
             logger.info("Updating tweet metrics...")
 
             session = get_session()
@@ -331,6 +347,10 @@ class MemeBot:
     def collect_analytics(self):
         """Collect daily analytics"""
         try:
+            if not self.twitter:
+                logger.warning("Twitter client not initialized. Skipping analytics collection.")
+                return
+
             logger.info("Collecting daily analytics...")
 
             session = get_session()
