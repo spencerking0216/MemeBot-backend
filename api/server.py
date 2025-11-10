@@ -63,6 +63,29 @@ def debug_endpoint():
     return jsonify(results)
 
 
+# Initialize database tables
+@app.route('/api/init-db', methods=['POST'])
+def initialize_database():
+    """Initialize database tables"""
+    try:
+        from database.models import init_db
+
+        logger.info("Initializing database tables...")
+        init_db()
+        logger.info("Database tables initialized successfully!")
+
+        return jsonify({
+            'success': True,
+            'message': 'Database tables created successfully'
+        })
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 # Tweet endpoints
 @app.route('/api/tweets', methods=['GET'])
 def get_tweets():
