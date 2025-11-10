@@ -568,6 +568,44 @@ def get_bot_status():
         return jsonify({'error': str(e)}), 500
 
 
+# Test content generation endpoint
+@app.route('/api/generate-test', methods=['POST'])
+def generate_test_content():
+    """Manually trigger content generation for testing"""
+    try:
+        data = request.json or {}
+        count = data.get('count', 3)
+
+        logger.info(f"Manual content generation triggered: {count} items")
+
+        # Import content generator
+        from bot.content_generator import ContentGenerator
+
+        generator = ContentGenerator()
+        results = []
+
+        for i in range(count):
+            logger.info(f"Generating content {i+1}/{count}...")
+            content = generator.generate_content()
+            if content:
+                results.append({
+                    'content': content.get('content'),
+                    'meme_format': content.get('meme_format'),
+                    'irony_level': content.get('irony_level')
+                })
+
+        return jsonify({
+            'success': True,
+            'message': f'Generated {len(results)} items',
+            'generated': len(results),
+            'results': results
+        })
+
+    except Exception as e:
+        logger.error(f"Error generating test content: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
