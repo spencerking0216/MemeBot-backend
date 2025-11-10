@@ -30,7 +30,8 @@ def health_check():
     """Health check endpoint for monitoring"""
     return jsonify({
         'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat()
+        'timestamp': datetime.utcnow().isoformat(),
+        'version': '1.0.1'
     })
 
 
