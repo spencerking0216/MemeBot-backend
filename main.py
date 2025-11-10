@@ -8,7 +8,6 @@ import threading
 import logging
 import signal
 import sys
-from bot.scheduler import MemeBot
 from api.server import app
 from config import Config
 
@@ -26,6 +25,9 @@ def start_bot():
     """Start the meme bot in a separate thread"""
     global bot
     try:
+        # Import bot modules only when needed
+        from bot.scheduler import MemeBot
+
         bot = MemeBot()
         bot.start()
         logger.info("Bot thread started")
